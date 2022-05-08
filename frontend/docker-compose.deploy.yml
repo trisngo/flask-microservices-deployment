@@ -1,11 +1,6 @@
 # docker-compose.deploy.yml
 version: '3.8'
 
-volumes:
-  userdb_vol:
-  productdb_vol:
-  orderdb_vol:
-
 networks:
   micro_network:
     external:
@@ -13,7 +8,7 @@ networks:
 
 services:
   user-api:
-    container_name: cuser-service
+    container_name: user-svc
     build:
       context: ../user-service
     ports:
@@ -24,23 +19,8 @@ services:
       - micro_network
     restart: always
 
-  user-db:
-    container_name: cuser_dbase
-    image: mysql:8
-    ports:
-    - "32000:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: pfm_dc_2020
-      MYSQL_DATABASE: user
-      MYSQL_USER: cloudacademy
-      MYSQL_PASSWORD: pfm_2020
-    networks:
-      - micro_network
-    volumes:
-    - userdb_vol:/var/lib/mysql
-
   product-api:
-    container_name: cproduct-service
+    container_name: product-svc
     build:
       context: ../product-service
     ports:
@@ -51,23 +31,9 @@ services:
       - micro_network
     restart: always
 
-  product-db:
-    container_name: cproduct_dbase
-    image: mysql:8
-    ports:
-    - "32001:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: pfm_dc_2020
-      MYSQL_DATABASE: product
-      MYSQL_USER: cloudacademy
-      MYSQL_PASSWORD: pfm_2020
-    networks:
-      - micro_network
-    volumes:
-    - productdb_vol:/var/lib/mysql
 
   order-api:
-    container_name: corder-service
+    container_name: order-svc
     build:
       context: ../order-service
     ports:
@@ -78,23 +44,23 @@ services:
       - micro_network
     restart: always
 
-  order-db:
-    container_name: corder_dbase
+  db:
+    container_name: mysql-svc
     image: mysql:8
     ports:
-    - "32002:3306"
+    - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: pfm_dc_2020
-      MYSQL_DATABASE: order
       MYSQL_USER: cloudacademy
       MYSQL_PASSWORD: pfm_2020
     networks:
       - micro_network
     volumes:
-    - orderdb_vol:/var/lib/mysql
+      - ../data:/var/lib/mysql
+      - ../initdb:/docker-entrypoint-initdb.d
 
   frontend-app:
-    container_name: cfrontend-app
+    container_name: frontend-svc
     build:
       context: .
     ports:

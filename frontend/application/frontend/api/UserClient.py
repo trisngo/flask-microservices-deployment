@@ -11,7 +11,7 @@ class UserClient:
             'username': form.username.data,
             'password': form.password.data
         }
-        url = 'http://cuser-service:5001/api/user/login'
+        url = 'http://user-svc:5001/api/user/login'
         response = requests.request("POST", url=url, data=payload)
         if response:
             d = response.json()
@@ -26,7 +26,7 @@ class UserClient:
         headers = {
             'Authorization': 'Basic ' + session['user_api_key']
         }
-        url = 'http://cuser-service:5001/api/user'
+        url = 'http://user-svc:5001/api/user'
         response = requests.request(method="GET", url=url, headers=headers)
         user = response.json()
         return user
@@ -41,7 +41,7 @@ class UserClient:
             'last_name': form.last_name.data,
             'username': form.username.data
         }
-        url = 'http://cuser-service:5001/api/user/create'
+        url = 'http://user-svc:5001/api/user/create'
         response = requests.request("POST", url=url, data=payload)
         if response:
             user = response.json()
@@ -49,7 +49,7 @@ class UserClient:
 
     @staticmethod
     def does_exist(username):
-        url = 'http://cuser-service:5001/api/user/' + username + '/exists'
+        url = 'http://user-svc:5001/api/user/' + username + '/exists'
         response = requests.request("GET", url=url)
         return response.status_code == 200
 
