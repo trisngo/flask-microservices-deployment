@@ -10,23 +10,22 @@ spec:
   resources:
     requests:
       storage: 50Mi
-
-# apiVersion: v1
-# kind: PersistentVolume
-# metadata:
-#   name: mysql-pv-volume
-#   labels:
-#     type: mysql
-# spec:
-#   storageClassName: manual
-#   capacity:
-#     storage: 10Gi
-#   accessModes:
-#     - ReadWriteOnce
-#   hostPath:
-#     path: "/mnt/data"
 ---
-
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mysql-pv-volume
+  labels:
+    type: mysql
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/data"
+---
 # this pvc will be used to store mysql database
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -68,7 +67,7 @@ spec:
         args:
           - "-o"
           - "/tmp/data/init.sql" # we are saving downloaded file as init.sql in /tmp/data directory
-          - "https://gist.githubusercontent.com/trisngo/ca9d50984155b621a217e60cb3e3fa29/raw/0372dfe1c5c63bb6baa03bf915c452cb98e75fa4/all_db.sql" # download url
+          - "https://raw.githubusercontent.com/trisngo/flask-microservices-deployment/master/initdb/all_db.sql" # download url
         volumeMounts:
         - name: init-script # mount the volume where downloaded file will be saved
           mountPath: /tmp/data

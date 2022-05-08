@@ -1,0 +1,42 @@
+apiVersion: skaffold/v2beta28
+kind: Config
+metadata:
+  name: flask-microservices-deployment
+build:
+  artifacts:
+    - image: trisngo/frontend-app
+      context: frontend
+      docker: 
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: '**/*.py'
+            dest: .
+    - image: trisngo/user-service
+      context: user-service
+      docker: 
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: '**/*.py'
+            dest: .
+    - image: trisngo/product-service
+      context: product-service
+      docker: 
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: '**/*.py'
+            dest: .
+    - image: trisngo/order-service
+      context: order-service
+      docker: 
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: '**/*.py'
+            dest: .
+deploy:
+  kubectl:
+    manifests:
+    - deploy/k8s/*
