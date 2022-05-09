@@ -26,34 +26,32 @@ jobs:
     steps:
     - uses: actions/checkout@main
     
-    # Connect to Azure Container Registry (ACR)
-    - name: "Connect ARC"
+    - name: "Connect to ACR"
       uses: azure/docker-login@v1
       with:
         login-server: ${{ env.REGISTRY_NAME }}.azurecr.io
         username: ${{ secrets.REGISTRY_USERNAME }} 
         password: ${{ secrets.REGISTRY_PASSWORD }}
     
-    # Container build and push to a Azure Container Registry (ACR)
-    - name: "Build & push ${{ env.APP_NAME_0 }} image"
+    - name: "Build & push ${{ env.APP_NAME_0 }} container"
       run: |
         docker build . -t ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME_0 }}
         docker push ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME_0 }}
       working-directory: ./${{ env.APP_NAME_0 }}
       
-    - name: "Build & push ${{ env.APP_NAME_1 }} image"
+    - name: "Build & push ${{ env.APP_NAME_1 }} container"
       run: |
         docker build . -t ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME_1 }}
         docker push ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME_1 }}
       working-directory: ./${{ env.APP_NAME_1 }}
       
-    - name: "Build & push ${{ env.APP_NAME_2 }} image"
+    - name: "Build & push ${{ env.APP_NAME_2 }} container"
       run: |
         docker build . -t ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME_2 }}
         docker push ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME_2 }}
       working-directory: ./${{ env.APP_NAME_2 }}
       
-    - name: "Build & push ${{ env.APP_NAME_3 }} image"
+    - name: "Build & push ${{ env.APP_NAME_3 }} container"
       run: |
         docker build . -t ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME_3 }}
         docker push ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME_3 }}
@@ -87,8 +85,8 @@ jobs:
           cluster-name: ${{ env.CLUSTER_NAME }}
           resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
           
-      # Create namespace if doesn't exist
-      - run: |
+      - name: Create namespace if doesn't exist
+        run: |
           kubectl create namespace ${{ env.NAMESPACE }} --dry-run=client -o json | kubectl apply -f -
           
       - name: "Create image pull secret for ACR"
