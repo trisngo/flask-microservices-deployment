@@ -1,16 +1,4 @@
-# This workflow will build and push a Docker container to an Azure Web App when a commit is pushed to your default branch.
-#
-# This workflow assumes you have already created the target Azure App Service web app.
-# For instructions see https://docs.microsoft.com/en-us/azure/app-service/quickstart-custom-container?tabs=dotnet&pivots=container-linux
-#
-# To configure this workflow:
-#
-# 1. Download the Publish Profile for your Azure Web App. You can download this file from the Overview page of your Web App in the Azure Portal.
-#    For more information: https://docs.microsoft.com/en-us/azure/app-service/deploy-github-actions?tabs=applevel#generate-deployment-credentials
-#
-
-
-name: Build and deploy a container
+name: Build and deploy containers to Azure Kubernetes Service
 env:
   REGISTRY_NAME: tringo
   CLUSTER_NAME: ProjectAKSCluster
