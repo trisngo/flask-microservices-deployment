@@ -8,6 +8,7 @@ env:
   APP_NAME_1: order-service
   APP_NAME_2: product-service
   APP_NAME_3: user-service
+  SECRET: tringoarc-auth
 
   
 on:
