@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: frontend-app
-          image: trisngo/frontend-app:latest
+          image: tringo.azurecr.io/frontend-app:latest
 ---
 apiVersion: v1
 kind: Service
