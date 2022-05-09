@@ -1,0 +1,116 @@
+trigger:
+- master
+
+resources:
+- repo: self
+
+variables:
+  # Container registry service connection established during pipeline creation
+  dockerRegistryServiceConnection: '13d97069-c665-412f-9742-5d549eb9fd4b'
+  containerRegistry: 'tringo.azurecr.io'
+  imageRepository0: 'frontendapp'
+  dockerfilePath0: '$(Build.SourcesDirectory)/frontend/Dockerfile'
+  imageRepository1: 'order-service'
+  dockerfilePath1: '$(Build.SourcesDirectory)/order-service/Dockerfile'
+  imageRepository2: 'product-service'
+  dockerfilePath2: '$(Build.SourcesDirectory)/product-service/Dockerfile'
+  imageRepository3: 'user-service'
+  dockerfilePath3: '$(Build.SourcesDirectory)/user-service/Dockerfile'
+  tag: '$(Build.BuildId)'
+
+  imagePullSecret: 'tringoarc-auth'
+  # Agent VM image name
+  vmImageName: 'ubuntu-latest'
+
+stages:
+- stage: Build
+  displayName: Build and push stage
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: Docker@2
+      displayName: Build and push an image $(imageRepository0) to container registry
+      inputs:
+        containerRegistry: '$(dockerRegistryServiceConnection)'
+        repository: '$(imageRepository0)'
+        command: 'buildAndPush'
+        Dockerfile: '$(dockerfilePath0)'
+        tags: |
+          $(tag)
+          latest
+    - task: Docker@2
+      displayName: Build and push an image $(imageRepository1) to container registry
+      inputs:
+        containerRegistry: '$(dockerRegistryServiceConnection)'
+        repository: '$(imageRepository1)'
+        command: 'buildAndPush'
+        Dockerfile: '$(dockerfilePath1)'
+        tags: |
+          $(tag)
+          latest
+    - task: Docker@2
+      displayName: Build and push an image $(imageRepository2) to container registry
+      inputs:
+        containerRegistry: '$(dockerRegistryServiceConnection)'
+        repository: '$(imageRepository2)'
+        command: 'buildAndPush'
+        Dockerfile: '$(dockerfilePath2)'
+        tags: |
+          $(tag)
+          latest
+    - task: Docker@2
+      displayName: Build and push an image $(imageRepository3) to container registry
+      inputs:
+        containerRegistry: '$(dockerRegistryServiceConnection)'
+        repository: '$(imageRepository3)'
+        command: 'buildAndPush'
+        Dockerfile: '$(dockerfilePath3)'
+        tags: |
+          $(tag)
+          latest
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: '$(Pipeline.Workspace)/s/deploy/k8s'
+        artifact: 'manifests'
+        publishLocation: 'pipeline'
+- stage: Deploy
+  displayName: Deploy to Dev
+  dependsOn: Build
+  jobs:
+  - job: Deploy
+    displayName: Deploy to AKS
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: DownloadPipelineArtifact@2
+      displayName: Download Manifests
+      inputs:
+        buildType: 'current'
+        artifactName: 'manifests'
+        targetPath: '$(Pipeline.Workspace)/manifests'
+    - task: KubernetesManifest@0
+      displayName: Create imagePullSecret
+      inputs:
+        action: 'createSecret'
+        kubernetesServiceConnection: 'ProjectAKSCluster-default'
+        namespace: 'default'
+        secretType: 'dockerRegistry'
+        secretName: '$(imagePullSecret)'
+        dockerRegistryEndpoint: 'tringo'
+    - task: KubernetesManifest@0
+      displayName: Deploy to Kubernetes cluster
+      inputs:
+        action: 'deploy'
+        kubernetesServiceConnection: 'ProjectAKSCluster-default'
+        namespace: 'default'
+        manifests: |
+          $(Pipeline.Workspace)/manifests/frontend-deployment.yaml
+          $(Pipeline.Workspace)/manifests/ingress-service.yaml
+          $(Pipeline.Workspace)/manifests/mysql-deployment.yaml
+          $(Pipeline.Workspace)/manifests/mysql-secret.yaml
+          $(Pipeline.Workspace)/manifests/order-deployment.yaml
+          $(Pipeline.Workspace)/manifests/product-deployment.yaml
+          $(Pipeline.Workspace)/manifests/user-deployment.yaml
