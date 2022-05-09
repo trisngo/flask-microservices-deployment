@@ -1,0 +1,131 @@
+# This workflow will build and push a Docker container to an Azure Web App when a commit is pushed to your default branch.
+#
+# This workflow assumes you have already created the target Azure App Service web app.
+# For instructions see https://docs.microsoft.com/en-us/azure/app-service/quickstart-custom-container?tabs=dotnet&pivots=container-linux
+#
+# To configure this workflow:
+#
+# 1. Download the Publish Profile for your Azure Web App. You can download this file from the Overview page of your Web App in the Azure Portal.
+#    For more information: https://docs.microsoft.com/en-us/azure/app-service/deploy-github-actions?tabs=applevel#generate-deployment-credentials
+#
+
+
+name: Build and deploy a container
+env:
+  REGISTRY_NAME: tringo
+  CLUSTER_NAME: ProjectAKSCluster
+  CLUSTER_RESOURCE_GROUP: ProjectRSGroup
+  NAMESPACE: default
+  APP_NAME_0: frontend
+  APP_NAME_1: order-service
+  APP_NAME_2: product-service
+  APP_NAME_3: user-service
+
+  
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@main
+    
+    # Connect to Azure Container Registry (ACR)
+    - name: "Connect ARC"
+      uses: azure/docker-login@v1
+      with:
+        login-server: ${{ env.REGISTRY_NAME }}.azurecr.io
+        username: ${{ secrets.REGISTRY_USERNAME }} 
+        password: ${{ secrets.REGISTRY_PASSWORD }}
+    
+    # Container build and push to a Azure Container Registry (ACR)
+    - name: "Build & push ${{ env.APP_NAME_0 }} image"
+      run: |
+        docker build . -t ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME_0 }}
+        docker push ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME_0 }}
+      working-directory: ./${{ env.APP_NAME_0 }}
+      
+    - name: "Build & push ${{ env.APP_NAME_1 }} image"
+      run: |
+        docker build . -t ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME_1 }}
+        docker push ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME_1 }}
+      working-directory: ./${{ env.APP_NAME_1 }}
+      
+    - name: "Build & push ${{ env.APP_NAME_2 }} image"
+      run: |
+        docker build . -t ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME_2 }}
+        docker push ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME_2 }}
+      working-directory: ./${{ env.APP_NAME_2 }}
+      
+    - name: "Build & push ${{ env.APP_NAME_3 }} image"
+      run: |
+        docker build . -t ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME_3 }}
+        docker push ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME_3 }}
+      working-directory: ./${{ env.APP_NAME_3 }}
+   
+    - name: "Upload manifest"
+      uses: actions/upload-artifact@v3
+      with:
+        name: manifests
+        path: ./deploy/k8s
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@main
+
+      - name: "Connect AKS"
+        uses: azure/login@v1
+        with:
+            creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: "Set target AKS cluster"
+        uses: azure/aks-set-context@v1
+        with:
+          creds: '${{ secrets.AZURE_CREDENTIALS }}'
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
+          
+      # Create namespace if doesn't exist
+      - run: |
+          kubectl create namespace ${{ env.NAMESPACE }} --dry-run=client -o json | kubectl apply -f -
+          
+      - name: "Create image pull secret for ACR"
+        uses: azure/k8s-create-secret@v1
+        with:
+          container-registry-url: ${{ env.REGISTRY_NAME }}.azurecr.io
+          container-registry-username: ${{ secrets.REGISTRY_USERNAME }}
+          container-registry-password: ${{ secrets.REGISTRY_PASSWORD }}
+          secret-name: ${{ env.SECRET }}
+          namespace: ${{ env.NAMESPACE }}
+          arguments: --force true
+        
+
+      - name: "Deploy to AKS"
+        uses: azure/k8s-deploy@v1
+        with:
+          manifests: |
+            ${{ github.workspace }}/manifests/frontend-deployment.yaml
+            ${{ github.workspace }}/manifests/ingress-service.yaml
+            ${{ github.workspace }}/manifests/mysql-deployment.yaml
+            ${{ github.workspace }}/manifests/mysql-secret.yaml
+            ${{ github.workspace }}/manifests/order-deployment.yaml
+            ${{ github.workspace }}/manifests/product-deployment.yaml
+            ${{ github.workspace }}/manifests/user-deployment.yaml
+          images: |
+            ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME_0 }}
+            ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME_1 }}
+            ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME_2 }}
+            ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME_3 }}
+          imagepullsecrets: |
+            ${{ env.SECRET }}
+          namespace: ${{ env.NAMESPACE }}
