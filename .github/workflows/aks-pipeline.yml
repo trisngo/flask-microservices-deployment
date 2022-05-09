@@ -70,7 +70,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@main
+      - name: "Download manifests"
+        uses: actions/download-artifact@v3
+        with:
+          name: manifests
 
       - name: "Connect AKS"
         uses: azure/login@v1
@@ -103,13 +106,13 @@ jobs:
         uses: azure/k8s-deploy@v1
         with:
           manifests: |
-            ${{ github.workspace }}/manifests/frontend-deployment.yaml
-            ${{ github.workspace }}/manifests/ingress-service.yaml
-            ${{ github.workspace }}/manifests/mysql-deployment.yaml
-            ${{ github.workspace }}/manifests/mysql-secret.yaml
-            ${{ github.workspace }}/manifests/order-deployment.yaml
-            ${{ github.workspace }}/manifests/product-deployment.yaml
-            ${{ github.workspace }}/manifests/user-deployment.yaml
+            ${{ github.workspace }}/frontend-deployment.yaml
+            ${{ github.workspace }}/ingress-service.yaml
+            ${{ github.workspace }}/mysql-deployment.yaml
+            ${{ github.workspace }}/mysql-secret.yaml
+            ${{ github.workspace }}/order-deployment.yaml
+            ${{ github.workspace }}/product-deployment.yaml
+            ${{ github.workspace }}/user-deployment.yaml
           images: |
             ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME_0 }}
             ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME_1 }}

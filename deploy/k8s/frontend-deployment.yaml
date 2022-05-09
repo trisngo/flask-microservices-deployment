@@ -13,8 +13,8 @@ spec:
         app: frontend
     spec:
       containers:
-        - name: frontend-app
-          image: tringo.azurecr.io/frontend-app:latest
+        - name: frontend
+          image: tringo.azurecr.io/frontend:latest
 ---
 apiVersion: v1
 kind: Service
