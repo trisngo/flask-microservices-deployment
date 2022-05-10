@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: order-service
-          image: tringo.azurecr.io/order-service:latest
+          image: tringo.azurecr.io/order-service
 ---
 apiVersion: v1
 kind: Service

@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: product-service
-          image: tringo.azurecr.io/product-service:latest
+          image: tringo.azurecr.io/product-service
 ---
 apiVersion: v1
 kind: Service
