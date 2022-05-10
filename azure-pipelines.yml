@@ -99,7 +99,7 @@ stages:
         namespace: 'default'
         secretType: 'dockerRegistry'
         secretName: '$(imagePullSecret)'
-        dockerRegistryEndpoint: 'tringo'
+        dockerRegistryEndpoint: '$(dockerRegistryServiceConnection)'
     - task: KubernetesManifest@0
       displayName: Deploy to Kubernetes cluster
       inputs:
@@ -114,3 +114,10 @@ stages:
           $(Pipeline.Workspace)/manifests/order-deployment.yaml
           $(Pipeline.Workspace)/manifests/product-deployment.yaml
           $(Pipeline.Workspace)/manifests/user-deployment.yaml
+        imagePullSecrets: |
+          $(imagePullSecret)
+        containers: |
+          $(containerRegistry)/$(imageRepository0):$(tag)
+          $(containerRegistry)/$(imageRepository1):$(tag)
+          $(containerRegistry)/$(imageRepository2):$(tag)
+          $(containerRegistry)/$(imageRepository3):$(tag)
