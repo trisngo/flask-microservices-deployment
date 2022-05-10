@@ -44,20 +44,20 @@ services:
       - micro_network
     restart: always
 
-  db:
-    container_name: mysql-svc
-    image: mysql:8
-    ports:
-    - "3306:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: pfm_dc_2020
-      MYSQL_USER: cloudacademy
-      MYSQL_PASSWORD: pfm_2020
-    networks:
-      - micro_network
-    volumes:
-      - ../data:/var/lib/mysql
-      - ../initdb:/docker-entrypoint-initdb.d
+  # db:
+  #   container_name: mysql-svc
+  #   image: mysql:8
+  #   ports:
+  #   - "3306:3306"
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: pfm_dc_2020
+  #     MYSQL_USER: cloudacademy
+  #     MYSQL_PASSWORD: pfm_2020
+  #   networks:
+  #     - micro_network
+  #   volumes:
+  #     - ../data:/var/lib/mysql
+  #     - ../initdb:/docker-entrypoint-initdb.d
 
   frontend-app:
     container_name: frontend-svc
