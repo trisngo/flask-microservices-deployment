@@ -25,21 +25,28 @@ variables:
 stages:
 - stage: Build
   displayName: Build and push
+  variables:
+    DB_URL: $(dbCredUrl)
   jobs:
   - job: Build
     displayName: Build
     pool:
       vmImage: $(vmImageName)
     steps:
-    - task: CmdLine@2
-      displayName: Add Database URL to .env
-      env:
-        DB_URL: $(dbCredUrl)
+    - task: replacetokens@5
       inputs:
-        script: |
-          echo DB_URL=\"$DB_URL\" | tee -a $(Build.SourcesDirectory)/order-service/.env
-          echo DB_URL=\"$DB_URL\" | tee -a $(Build.SourcesDirectory)/product-service/.env
-          echo DB_URL=\"$DB_URL\" | tee -a $(Build.SourcesDirectory)/user-service/.env
+        rootDirectory: '$(Build.SourcesDirectory)'
+        targetFiles: '**/.env'
+        encoding: 'auto'
+        tokenPattern: 'default'
+        writeBOM: true
+        actionOnMissing: 'warn'
+        keepToken: false
+        actionOnNoFiles: 'continue'
+        enableTransforms: false
+        enableRecursion: false
+        useLegacyPattern: false
+        enableTelemetry: true
     - task: Docker@2
       displayName: Build and push an image $(imageRepository0) to container registry
       inputs:
