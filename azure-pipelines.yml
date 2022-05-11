@@ -8,7 +8,7 @@ variables:
   # Container registry service connection established during pipeline creation
   dockerRegistryServiceConnection: '13d97069-c665-412f-9742-5d549eb9fd4b'
   containerRegistry: 'tringo.azurecr.io'
-  imageRepository0: 'frontendapp'
+  imageRepository0: 'frontend'
   dockerfilePath0: '$(Build.SourcesDirectory)/frontend/Dockerfile'
   imageRepository1: 'order-service'
   dockerfilePath1: '$(Build.SourcesDirectory)/order-service/Dockerfile'
