@@ -15,14 +15,14 @@ class Config:
 class DevelopmentConfig(Config):
     ENV = "development"
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://'+ dbUrl +'/order_dev'
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://#dburl#/order_dev'
     SQLALCHEMY_ECHO = True
 
 
 class ProductionConfig(Config):
     ENV = "production"
     DEBUG = False
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://'+ dbUrl +'/orderdb'
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://#dburl#/orderdb'
     SQLALCHEMY_ECHO = False
 
 

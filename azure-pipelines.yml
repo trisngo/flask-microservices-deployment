@@ -26,7 +26,7 @@ stages:
 - stage: Build
   displayName: Build and push
   variables:
-    DB_URL: $(dbCredUrl)
+    dburl: $(dbCredUrl)
   jobs:
   - job: Build
     displayName: Build
@@ -36,9 +36,11 @@ stages:
     - task: replacetokens@5
       inputs:
         rootDirectory: '$(Build.SourcesDirectory)'
-        targetFiles: '**/.env'
+        targetFiles: '**/config.py'
         encoding: 'auto'
-        tokenPattern: 'default'
+        tokenPattern: 'custom'
+        tokenPrefix: '#'
+        tokenSuffix: '#'
         writeBOM: true
         actionOnMissing: 'warn'
         keepToken: false

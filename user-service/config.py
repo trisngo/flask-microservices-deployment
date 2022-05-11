@@ -16,13 +16,13 @@ class Config:
 class DevelopmentConfig(Config):
     ENV = "development"
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://'+ dbUrl +'/user_dev'
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://#dburl#/user_dev'
     SQLALCHEMY_ECHO = True
 
 
 class ProductionConfig(Config):
     ENV = "production"
     DEBUG = False
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://'+ dbUrl +'/userdb'
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://#dburl#/userdb'
     SQLALCHEMY_ECHO = False
 
