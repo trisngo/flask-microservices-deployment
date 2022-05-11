@@ -37,11 +37,9 @@ stages:
         DB_URL: $(dbCredUrl)
       inputs:
         script: |
-          echo DB_URL=$DB_URL | \
-          tee -a $(Build.SourcesDirectory)/frontend/.env \
-          $(Build.SourcesDirectory)/order-service/.env \
-          $(Build.SourcesDirectory)/product-service/.env \
-          $(Build.SourcesDirectory)/user-service/.env
+          echo DB_URL=\"$DB_URL\" | tee -a $(Build.SourcesDirectory)/order-service/.env
+          echo DB_URL=\"$DB_URL\" | tee -a $(Build.SourcesDirectory)/product-service/.env
+          echo DB_URL=\"$DB_URL\" | tee -a $(Build.SourcesDirectory)/user-service/.env
     - task: Docker@2
       displayName: Build and push an image $(imageRepository0) to container registry
       inputs:
