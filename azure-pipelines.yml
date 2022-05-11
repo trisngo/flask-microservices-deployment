@@ -23,8 +23,8 @@ variables:
   vmImageName: 'ubuntu-latest'
 
 stages:
-- stage: Build image
-  displayName: Build and push stage
+- stage: Build
+  displayName: Build and push
   jobs:
   - job: Build
     displayName: Build
