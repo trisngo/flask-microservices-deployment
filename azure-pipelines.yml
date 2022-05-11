@@ -75,6 +75,8 @@ stages:
 - stage: Deploy
   displayName: Deploy to AKS
   dependsOn: Build
+  variables:
+    replica-no: 1
   jobs:
   - deployment: Deploy
     displayName: Deploy to AKS
@@ -99,6 +101,21 @@ stages:
               secretType: 'dockerRegistry'
               secretName: '$(imagePullSecret)'
               dockerRegistryEndpoint: '$(dockerRegistryServiceConnection)'
+          - task: replacetokens@5
+            displayName: Replace Token
+            inputs:
+              rootDirectory: '$(Pipeline.Workspace)/manifests'
+              targetFiles: '**/*.yaml'
+              encoding: 'auto'
+              tokenPattern: 'default'
+              writeBOM: true
+              actionOnMissing: 'warn'
+              keepToken: false
+              actionOnNoFiles: 'continue'
+              enableTransforms: false
+              enableRecursion: false
+              useLegacyPattern: false
+              enableTelemetry: true
           - task: KubernetesManifest@0
             displayName: Deploy to Kubernetes cluster
             inputs:
