@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: product
+  template:
+    metadata:
+      labels:
+        app: product
+    spec:
+      containers:
+        - name: product-service
+          image: tringo.azurecr.io/product-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: product-svc
+spec:
+  selector:
+    app: product
+  ports:
+    - name: product
+      protocol: TCP
+      port: 5002
+      targetPort: 5002

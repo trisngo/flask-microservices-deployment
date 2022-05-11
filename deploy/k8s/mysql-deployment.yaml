@@ -1,111 +1,111 @@
-# # this pvc will be used to store downloaded init.sql file
-# kind: PersistentVolumeClaim
-# apiVersion: v1
-# metadata:
-#   name: init-script
-# spec:
-#   accessModes:
-#     - ReadWriteOnce
-#   volumeMode: Filesystem
-#   resources:
-#     requests:
-#       storage: 50Mi
-# ---
-# apiVersion: v1
-# kind: PersistentVolume
-# metadata:
-#   name: mysql-pv-volume
-#   labels:
-#     type: mysql
-# spec:
-#   storageClassName: manual
-#   capacity:
-#     storage: 10Gi
-#   accessModes:
-#     - ReadWriteOnce
-#   hostPath:
-#     path: "/mnt/data"
-# ---
-# # this pvc will be used to store mysql database
-# apiVersion: v1
-# kind: PersistentVolumeClaim
-# metadata:
-#   name: mysql-pv-claim
-#   labels:
-#     app: mysql
-# spec:
-#   # storageClassName: manual
-#   accessModes:
-#     - ReadWriteOnce
-#   resources:
-#     requests:
-#       storage: 10Gi
-# ---
+# this pvc will be used to store downloaded init.sql file
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: init-script
+spec:
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 50Mi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mysql-pv-volume
+  labels:
+    type: mysql
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/data"
+---
+# this pvc will be used to store mysql database
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pv-claim
+  labels:
+    app: mysql
+spec:
+  # storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
 
-# apiVersion: apps/v1
-# kind: Deployment
-# metadata:
-#   name: mysql
-#   labels:
-#     app: mysql
-# spec:
-#   selector:
-#     matchLabels:
-#       app: mysql
-#       tier: mysql
-#   strategy:
-#     type: Recreate
-#   template:
-#     metadata:
-#       labels:
-#         app: mysql
-#         tier: mysql
-#     spec:
-#       initContainers:  # this init container download init.sql file using "curl -o <downloaded file name with path> <download url>" command.
-#       - name: init-script-downloader
-#         image: appropriate/curl
-#         args:
-#           - "-o"
-#           - "/tmp/data/init.sql" # we are saving downloaded file as init.sql in /tmp/data directory
-#           - "https://raw.githubusercontent.com/trisngo/flask-microservices-deployment/master/initdb/all_db.sql" # download url
-#         volumeMounts:
-#         - name: init-script # mount the volume where downloaded file will be saved
-#           mountPath: /tmp/data
-#       containers:
-#       - image: mysql:8
-#         name: mysql
-#         env:
-#         - name: MYSQL_ROOT_PASSWORD
-#           valueFrom:
-#             secretKeyRef:
-#               name: mysql-secret
-#               key: password
-#         ports:
-#         - containerPort: 3306
-#           name: mysql
-#         volumeMounts:
-#         - name: mysql-persistent-storage
-#           mountPath: /var/lib/mysql
-#         - name: init-script
-#           mountPath: /docker-entrypoint-initdb.d # we are mounting init-script volume in this directory. so init.sql file will be available here.
-#       volumes:
-#       - name: mysql-persistent-storage
-#         persistentVolumeClaim:
-#           claimName: mysql-pv-claim
-#       - name: init-script # this volume holds downloaded init.sql file.
-#         persistentVolumeClaim:
-#           claimName: init-script
-# ---
-# apiVersion: v1
-# kind: Service
-# metadata:
-#   name: mysql-svc
-#   labels:
-#     app: mysql
-# spec:
-#   ports:
-#     - port: 3306
-#   selector:
-#     app: mysql
-#     tier: mysql
-#   clusterIP: None
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+  labels:
+    app: mysql
+spec:
+  selector:
+    matchLabels:
+      app: mysql
+      tier: mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mysql
+        tier: mysql
+    spec:
+      initContainers:  # this init container download init.sql file using "curl -o <downloaded file name with path> <download url>" command.
+      - name: init-script-downloader
+        image: appropriate/curl
+        args:
+          - "-o"
+          - "/tmp/data/init.sql" # we are saving downloaded file as init.sql in /tmp/data directory
+          - "https://raw.githubusercontent.com/trisngo/flask-microservices-deployment/master/initdb/all_db.sql" # download url
+        volumeMounts:
+        - name: init-script # mount the volume where downloaded file will be saved
+          mountPath: /tmp/data
+      containers:
+      - image: mysql:8
+        name: mysql
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: password
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:
+        - name: mysql-persistent-storage
+          mountPath: /var/lib/mysql
+        - name: init-script
+          mountPath: /docker-entrypoint-initdb.d # we are mounting init-script volume in this directory. so init.sql file will be available here.
+      volumes:
+      - name: mysql-persistent-storage
+        persistentVolumeClaim:
+          claimName: mysql-pv-claim
+      - name: init-script # this volume holds downloaded init.sql file.
+        persistentVolumeClaim:
+          claimName: init-script
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-svc
+  labels:
+    app: mysql
+spec:
+  ports:
+    - port: 3306
+  selector:
+    app: mysql
+    tier: mysql
+  clusterIP: None
