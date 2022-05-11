@@ -23,7 +23,7 @@ variables:
   vmImageName: 'ubuntu-latest'
 
 stages:
-- stage: Build
+- stage: Build image
   displayName: Build and push stage
   jobs:
   - job: Build
@@ -77,47 +77,47 @@ stages:
         artifact: 'manifests'
         publishLocation: 'pipeline'
 - stage: Deploy
-  displayName: Deploy to Dev
+  displayName: Deploy to AKS
   dependsOn: Build
   jobs:
-  - job: Deploy
+  - deployment: Deploy
     displayName: Deploy to AKS
+    environment: 'trisngoflaskmicroservicesdeployment.default'
     pool:
       vmImage: $(vmImageName)
-    steps:
-    - task: DownloadPipelineArtifact@2
-      displayName: Download Manifests
-      inputs:
-        buildType: 'current'
-        artifactName: 'manifests'
-        targetPath: '$(Pipeline.Workspace)/manifests'
-    - task: KubernetesManifest@0
-      displayName: Create imagePullSecret
-      inputs:
-        action: 'createSecret'
-        kubernetesServiceConnection: 'ProjectAKSCluster-default'
-        namespace: 'default'
-        secretType: 'dockerRegistry'
-        secretName: '$(imagePullSecret)'
-        dockerRegistryEndpoint: '$(dockerRegistryServiceConnection)'
-    - task: KubernetesManifest@0
-      displayName: Deploy to Kubernetes cluster
-      inputs:
-        action: 'deploy'
-        kubernetesServiceConnection: 'ProjectAKSCluster-default'
-        namespace: 'default'
-        manifests: |
-          $(Pipeline.Workspace)/manifests/frontend-deployment.yaml
-          $(Pipeline.Workspace)/manifests/ingress-service.yaml
-          $(Pipeline.Workspace)/manifests/mysql-deployment.yaml
-          $(Pipeline.Workspace)/manifests/mysql-secret.yaml
-          $(Pipeline.Workspace)/manifests/order-deployment.yaml
-          $(Pipeline.Workspace)/manifests/product-deployment.yaml
-          $(Pipeline.Workspace)/manifests/user-deployment.yaml
-        imagePullSecrets: |
-          $(imagePullSecret)
-        containers: |
-          $(containerRegistry)/$(imageRepository0):$(tag)
-          $(containerRegistry)/$(imageRepository1):$(tag)
-          $(containerRegistry)/$(imageRepository2):$(tag)
-          $(containerRegistry)/$(imageRepository3):$(tag)
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: DownloadPipelineArtifact@2
+            displayName: Download Manifests
+            inputs:
+              buildType: 'current'
+              artifactName: 'manifests'
+              targetPath: '$(Pipeline.Workspace)/manifests'
+          - task: KubernetesManifest@0
+            displayName: Create imagePullSecret
+            inputs:
+              action: 'createSecret'
+              namespace: 'default'
+              secretType: 'dockerRegistry'
+              secretName: '$(imagePullSecret)'
+              dockerRegistryEndpoint: '$(dockerRegistryServiceConnection)'
+          - task: KubernetesManifest@0
+            displayName: Deploy to Kubernetes cluster
+            inputs:
+              action: 'deploy'
+              namespace: 'default'
+              manifests: |
+                $(Pipeline.Workspace)/manifests/frontend-deployment.yaml
+                $(Pipeline.Workspace)/manifests/ingress-service.yaml
+                $(Pipeline.Workspace)/manifests/mysql-deployment.yaml
+                $(Pipeline.Workspace)/manifests/mysql-secret.yaml
+                $(Pipeline.Workspace)/manifests/order-deployment.yaml
+                $(Pipeline.Workspace)/manifests/product-deployment.yaml
+                $(Pipeline.Workspace)/manifests/user-deployment.yaml
+              containers: |
+                $(containerRegistry)/$(imageRepository0):$(tag)
+                $(containerRegistry)/$(imageRepository1):$(tag)
+                $(containerRegistry)/$(imageRepository2):$(tag)
+                $(containerRegistry)/$(imageRepository3):$(tag)
