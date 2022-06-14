@@ -33,12 +33,6 @@ stages:
     pool:
       vmImage: $(vmImageName)
     steps:
-    - task: gitversion/setup@0
-      displayName: Install GitVersion
-      inputs:
-        versionSpec: '5.5.0'
-    - task: gitversion/execute@0
-      displayName: Determine Version
     - task: replacetokens@5
       inputs:
         rootDirectory: '$(Build.SourcesDirectory)'
@@ -63,7 +57,8 @@ stages:
         command: 'buildAndPush'
         Dockerfile: '$(dockerfilePath0)'
         tags: |
-          $(GitVersion.FullSemVer)
+          $(tag)
+          latest
     - task: Docker@2
       displayName: Build and push an image $(imageRepository1) to container registry
       inputs:
@@ -72,7 +67,8 @@ stages:
         command: 'buildAndPush'
         Dockerfile: '$(dockerfilePath1)'
         tags: |
-          $(GitVersion.FullSemVer)
+          $(tag)
+          latest
     - task: Docker@2
       displayName: Build and push an image $(imageRepository2) to container registry
       inputs:
@@ -81,7 +77,8 @@ stages:
         command: 'buildAndPush'
         Dockerfile: '$(dockerfilePath2)'
         tags: |
-          $(GitVersion.FullSemVer)
+          $(tag)
+          latest
     - task: Docker@2
       displayName: Build and push an image $(imageRepository3) to container registry
       inputs:
@@ -90,7 +87,8 @@ stages:
         command: 'buildAndPush'
         Dockerfile: '$(dockerfilePath3)'
         tags: |
-          $(GitVersion.FullSemVer)
+          $(tag)
+          latest
     - task: PublishPipelineArtifact@1
       inputs:
         targetPath: '$(Pipeline.Workspace)/s/deploy/aks'
@@ -154,8 +152,8 @@ stages:
                 $(Pipeline.Workspace)/manifests/product-deployment.yaml
                 $(Pipeline.Workspace)/manifests/user-deployment.yaml
               containers: |
-                $(containerRegistry)/$(imageRepository0):$(GitVersion.FullSemVer)
-                $(containerRegistry)/$(imageRepository1):$(GitVersion.FullSemVer)
-                $(containerRegistry)/$(imageRepository2):$(GitVersion.FullSemVer)
-                $(containerRegistry)/$(imageRepository3):$(GitVersion.FullSemVer)
+                $(containerRegistry)/$(imageRepository0):$(tag)
+                $(containerRegistry)/$(imageRepository1):$(tag)
+                $(containerRegistry)/$(imageRepository2):$(tag)
+                $(containerRegistry)/$(imageRepository3):$(tag)
               imagePullSecrets: '$(imagePullSecret)'
