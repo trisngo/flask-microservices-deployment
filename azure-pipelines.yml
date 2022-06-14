@@ -33,6 +33,14 @@ stages:
     pool:
       vmImage: $(vmImageName)
     steps:
+    - task: Docker@2
+      inputs:
+        containerRegistry: '$(dockerRegistryServiceConnection)'
+        command: 'login'
+    
+    - script: "docker pull $(containerRegistry)/$(imageRepository0):latest"
+      displayName: Pull latest $(imageRepository0) for layer caching
+      continueOnError: true # for first build, no cache
     - task: replacetokens@5
       inputs:
         rootDirectory: '$(Build.SourcesDirectory)'
@@ -50,12 +58,22 @@ stages:
         useLegacyPattern: false
         enableTelemetry: true
     - task: Docker@2
-      displayName: Build and push an image $(imageRepository0) to container registry
+      displayName: Build an image $(imageRepository0) to container registry
       inputs:
         containerRegistry: '$(dockerRegistryServiceConnection)'
         repository: '$(imageRepository0)'
-        command: 'buildAndPush'
         Dockerfile: '$(dockerfilePath0)'
+        command: 'build'
+        arguments: '--cache-from=$(containerRegistry)/$(imageRepository0):latest'
+        tags: |
+          $(tag)
+          latest
+    - task: Docker@2
+      displayName: Push an image $(imageRepository0) to container registry
+      inputs:
+        containerRegistry: '$(dockerRegistryServiceConnection)'
+        command: 'push'
+        repository: '$(imageRepository0)'
         tags: |
           $(tag)
           latest
