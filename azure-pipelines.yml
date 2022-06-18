@@ -33,14 +33,6 @@ stages:
     pool:
       vmImage: $(vmImageName)
     steps:
-    - task: Docker@2
-      inputs:
-        containerRegistry: '$(dockerRegistryServiceConnection)'
-        command: 'login'
-    
-    - script: "docker pull $(containerRegistry)/$(imageRepository0):latest"
-      displayName: Pull latest $(imageRepository0) for layer caching
-      continueOnError: true # for first build, no cache
     - task: replacetokens@5
       inputs:
         rootDirectory: '$(Build.SourcesDirectory)'
@@ -58,7 +50,23 @@ stages:
         useLegacyPattern: false
         enableTelemetry: true
     - task: Docker@2
-      displayName: Build an image $(imageRepository0) to container registry
+      inputs:
+        containerRegistry: '$(dockerRegistryServiceConnection)'
+        command: 'login'
+    - script: "docker pull $(containerRegistry)/$(imageRepository0):latest"
+      displayName: Pull latest $(imageRepository0) for layer caching
+      continueOnError: true     
+    - script: "docker pull $(containerRegistry)/$(imageRepository1):latest"
+      displayName: Pull latest $(imageRepository1) for layer caching
+      continueOnError: true 
+    - script: "docker pull $(containerRegistry)/$(imageRepository2):latest"
+      displayName: Pull latest $(imageRepository2) for layer caching
+      continueOnError: true 
+    - script: "docker pull $(containerRegistry)/$(imageRepository3):latest"
+      displayName: Pull latest $(imageRepository3) for layer caching
+      continueOnError: true 
+    - task: Docker@2
+      displayName: Build an image $(imageRepository0)
       inputs:
         containerRegistry: '$(dockerRegistryServiceConnection)'
         repository: '$(imageRepository0)'
@@ -78,32 +86,62 @@ stages:
           $(tag)
           latest
     - task: Docker@2
-      displayName: Build and push an image $(imageRepository1) to container registry
+      displayName: Build an image $(imageRepository1)
       inputs:
         containerRegistry: '$(dockerRegistryServiceConnection)'
         repository: '$(imageRepository1)'
-        command: 'buildAndPush'
         Dockerfile: '$(dockerfilePath1)'
+        command: 'build'
+        arguments: '--cache-from=$(containerRegistry)/$(imageRepository1):latest'
         tags: |
           $(tag)
           latest
     - task: Docker@2
-      displayName: Build and push an image $(imageRepository2) to container registry
+      displayName: Push an image $(imageRepository1) to container registry
+      inputs:
+        containerRegistry: '$(dockerRegistryServiceConnection)'
+        command: 'push'
+        repository: '$(imageRepository1)'
+        tags: |
+          $(tag)
+          latest
+    - task: Docker@2
+      displayName: Build an image $(imageRepository2)
       inputs:
         containerRegistry: '$(dockerRegistryServiceConnection)'
         repository: '$(imageRepository2)'
-        command: 'buildAndPush'
         Dockerfile: '$(dockerfilePath2)'
+        command: 'build'
+        arguments: '--cache-from=$(containerRegistry)/$(imageRepository2):latest'
         tags: |
           $(tag)
           latest
     - task: Docker@2
-      displayName: Build and push an image $(imageRepository3) to container registry
+      displayName: Push an image $(imageRepository2) to container registry
+      inputs:
+        containerRegistry: '$(dockerRegistryServiceConnection)'
+        command: 'push'
+        repository: '$(imageRepository2)'
+        tags: |
+          $(tag)
+          latest
+    - task: Docker@2
+      displayName: Build an image $(imageRepository3)
       inputs:
         containerRegistry: '$(dockerRegistryServiceConnection)'
         repository: '$(imageRepository3)'
-        command: 'buildAndPush'
         Dockerfile: '$(dockerfilePath3)'
+        command: 'build'
+        arguments: '--cache-from=$(containerRegistry)/$(imageRepository3):latest'
+        tags: |
+          $(tag)
+          latest
+    - task: Docker@2
+      displayName: Push an image $(imageRepository3) to container registry
+      inputs:
+        containerRegistry: '$(dockerRegistryServiceConnection)'
+        command: 'push'
+        repository: '$(imageRepository3)'
         tags: |
           $(tag)
           latest
