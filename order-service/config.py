@@ -11,18 +11,17 @@ dbUrl = os.environ.get('DB_URL')
 class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-
 class DevelopmentConfig(Config):
     ENV = "development"
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://#dburl#/order_dev'
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://cloudacademy:pfm_2020@mysql-svc:3306/order_dev'
     SQLALCHEMY_ECHO = True
 
 
 class ProductionConfig(Config):
     ENV = "production"
     DEBUG = False
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://#dburl#/orderdb'
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://cloudacademy:pfm_2020@mysql-svc:3306/orderdb'
     SQLALCHEMY_ECHO = False
 
 

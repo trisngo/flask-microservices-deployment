@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: user-service
-          image: tringo.azurecr.io/user-service
+          image: trisngo/user-service
 ---
 apiVersion: v1
 kind: Service
