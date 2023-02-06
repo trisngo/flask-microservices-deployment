@@ -6,7 +6,7 @@ resources:
 
 variables:
   # Container registry service connection established during pipeline creation
-  dockerRegistryServiceConnection: '8bb44de2-da7f-48a8-aa13-aaeec658c83f'
+  dockerRegistryServiceConnection: 'tringo'
   containerRegistry: 'tringo.azurecr.io'
   imageRepository0: 'frontend'
   dockerfilePath0: '$(Build.SourcesDirectory)/frontend/Dockerfile'
@@ -65,11 +65,14 @@ stages:
     - script: "docker pull $(containerRegistry)/$(imageRepository3):latest"
       displayName: Pull latest $(imageRepository3) for layer caching
       continueOnError: true 
-    
+
     - task: Docker@2
       displayName: Build an image $(imageRepository0)
       inputs:
-        containerRegistry: '$(dockerRegistryServiceConnection)'
+        # containerregistrytype: 'Azure Container Registry'
+        # azureSubscription: 'Azure for Students(8bb44de2-da7f-48a8-aa13-aaeec658c83f)'
+        # azureContainerRegistry: '{"loginServer":"tringo.azurecr.io", "id" : "/subscriptions/8bb44de2-da7f-48a8-aa13-aaeec658c83f/resourceGroups/aks-cis-bench/providers/Microsoft.ContainerRegistry/registries/tringo"}'
+        containerRegistry: 'tringo'
         repository: '$(imageRepository0)'
         Dockerfile: '$(dockerfilePath0)'
         command: 'build'
