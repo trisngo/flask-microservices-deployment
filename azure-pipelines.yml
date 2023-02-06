@@ -51,7 +51,7 @@ stages:
         enableTelemetry: true
     - task: Docker@2
       inputs:
-        containerRegistry: '$(dockerRegistryServiceConnection)'
+        containerRegistry: '$(containerRegistry)'
         command: 'login'
     - script: "docker pull $(containerRegistry)/$(imageRepository0):latest"
       displayName: Pull latest $(imageRepository0) for layer caching
