@@ -6,7 +6,7 @@ resources:
 
 variables:
   # Container registry service connection established during pipeline creation
-  dockerRegistryServiceConnection: '88669215-55be-4430-9184-6f6a6ca58e3e'
+  dockerRegistryServiceConnection: 'tringoarc'
   containerRegistry: 'tringo.azurecr.io'
   imageRepository0: 'frontend'
   dockerfilePath0: '$(Build.SourcesDirectory)/frontend/Dockerfile'
